@@ -63,6 +63,7 @@ class VoiceService : Service(), SensorEventListener {
         }
 
         engine.start()
+        current = this
         isRunning = true
         return START_NOT_STICKY
     }
@@ -84,6 +85,7 @@ class VoiceService : Service(), SensorEventListener {
         sensorManager?.unregisterListener(this)
         sensorManager = null
         engine.stop()
+        current = null
         wakeLock?.release()
         wakeLock = null
         isRunning = false
@@ -121,6 +123,13 @@ class VoiceService : Service(), SensorEventListener {
             private set
 
         @Volatile var shakeEnabled = false
+
+        @Volatile private var current: VoiceService? = null
+
+        /** Moves the live voice to the newly chosen speaker. */
+        fun reroute() {
+            current?.engine?.reroute()
+        }
 
         private const val SHAKE_FORCE = 14f
         private const val SHAKE_COOLDOWN_MS = 1800L

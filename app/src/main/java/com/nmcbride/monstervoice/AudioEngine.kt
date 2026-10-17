@@ -16,12 +16,18 @@ import android.util.Log
 class AudioEngine(private val voice: MonsterVoice) {
 
     @Volatile private var running = false
+    @Volatile private var activeTrack: AudioTrack? = null
     private var thread: Thread? = null
 
     fun start() {
         if (running) return
         running = true
         thread = Thread(::loop, "MonsterVoiceAudio").also { it.start() }
+    }
+
+    /** Re-applies the chosen speaker while running. */
+    fun reroute() {
+        activeTrack?.let { OutputRouter.apply(it) }
     }
 
     fun stop() {
@@ -66,6 +72,9 @@ class AudioEngine(private val voice: MonsterVoice) {
                 .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
                 .build()
 
+            OutputRouter.apply(track)
+            activeTrack = track
+
             if (record.state != AudioRecord.STATE_INITIALIZED) {
                 Log.e(TAG, "Microphone failed to start")
                 return
@@ -86,6 +95,7 @@ class AudioEngine(private val voice: MonsterVoice) {
             Log.e(TAG, "Audio loop failed", e)
         } finally {
             running = false
+            activeTrack = null
             runCatching { record?.stop() }
             runCatching { track?.stop() }
             record?.release()

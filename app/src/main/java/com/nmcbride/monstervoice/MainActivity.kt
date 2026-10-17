@@ -36,6 +36,7 @@ class MainActivity : Activity() {
     private lateinit var volumeBar: SeekBar
     private lateinit var micBar: SeekBar
     private lateinit var mineChip: TextView
+    private lateinit var outputChip: TextView
     private val chips = mutableListOf<TextView>()
     private val pads = mutableListOf<View>()
 
@@ -84,11 +85,17 @@ class MainActivity : Activity() {
             prefs.edit().putBoolean(KEY_SHAKE, checked).apply()
         }
 
+        outputChip = findViewById(R.id.output_chip)
+        outputChip.setOnClickListener { pickOutput() }
+
         applySettings()
     }
 
     override fun onResume() {
         super.onResume()
+        OutputRouter.refresh(this)
+        outputChip.text = OutputRouter.currentLabel(this)
+        VoiceService.reroute()
         updateLiveState()
         micButton.post(meter)
     }
@@ -383,6 +390,24 @@ class MainActivity : Activity() {
             .putExtra(Intent.EXTRA_STREAM, uri)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         startActivity(Intent.createChooser(send, getString(R.string.share)))
+    }
+
+    // --- Output speaker ------------------------------------------------------
+
+    private fun pickOutput() {
+        val outputs = OutputRouter.outputs(this)
+        val savedKey = OutputRouter.savedKey(this)
+        val checked = outputs.indexOfFirst { it.key == savedKey }.coerceAtLeast(0)
+        AlertDialog.Builder(this, R.style.DialogTheme)
+            .setTitle(R.string.output)
+            .setSingleChoiceItems(outputs.map { it.label }.toTypedArray(), checked) { dialog, which ->
+                OutputRouter.choose(this, outputs[which])
+                outputChip.text = outputs[which].label
+                VoiceService.reroute()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     // --- Live voice ----------------------------------------------------------

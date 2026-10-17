@@ -51,6 +51,14 @@
     <string name="percent_value">%1$d%%</string>
 
     <string name="extras">Extras</string>
+    <string name="output">Plays through</string>
+    <string name="output_hint">Pick the speaker for the voice and sounds.</string>
+    <string name="output_auto">Automatic</string>
+    <string name="output_speaker">Phone speaker</string>
+    <string name="output_earpiece">Earpiece</string>
+    <string name="output_wired">Wired headphones</string>
+    <string name="output_bluetooth">Bluetooth: %1$s</string>
+    <string name="output_usb">USB audio</string>
     <string name="shake_to_roar">Shake to roar</string>
     <string name="shake_hint">Shake the phone to roar while live.</string>
 

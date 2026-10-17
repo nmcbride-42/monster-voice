@@ -39,6 +39,7 @@ object SoundPlayer {
             .setBufferSizeInBytes(pcm.size * 2)
             .setTransferMode(AudioTrack.MODE_STATIC)
             .build()
+        OutputRouter.apply(t)
         t.write(pcm, 0, pcm.size)
         t.play()
         track = t
