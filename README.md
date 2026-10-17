@@ -14,7 +14,8 @@ as you talk. Made for Halloween 2026.
    voice, and a tap plays it. Use ⋮ on a pad to rename, share, or delete it.
 4. **Monster**: pick Grumbly, Beast, Giant or Demon. Tune the sliders, then hold
    **★ My Monster** to save and name your own.
-5. **Tune**: Deepness (up to one octave down), Growl, Echo, Volume, and Mic boost.
+5. **Tune**: Deepness (up to one octave down), Growl, Echo, Volume, Noise filter
+   (drops rumble, hiss and quieter background sounds), and Mic boost.
 6. **Shake to roar**: while live, shake the phone to roar.
 7. The voice keeps running with the screen off. Stop it from the app or the notification.
 
