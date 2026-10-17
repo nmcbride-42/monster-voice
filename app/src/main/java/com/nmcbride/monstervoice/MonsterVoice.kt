@@ -11,7 +11,8 @@ import kotlin.math.tanh
  * The monster voice effect. Pure Kotlin with no Android dependencies, so it
  * can be unit tested on the JVM.
  *
- * Signal chain: noise gate -> pitch shift down -> growl (rumble + grit) -> volume.
+ * Signal chain: mic boost -> noise gate -> pitch shift down -> growl (rumble + grit)
+ * -> echo -> roar sound effect -> volume.
  *
  * The pitch shifter is a classic two-tap delay-line shifter: two read heads
  * sweep through a short delay buffer half a cycle apart and are crossfaded
@@ -27,6 +28,12 @@ class MonsterVoice(private val sampleRate: Int) {
 
     /** Output gain, 0..2. */
     @Volatile var volume: Float = 1f
+
+    /** Microphone gain, 0..4. Turn up for a quiet voice or a mic far from the mouth. */
+    @Volatile var micBoost: Float = 1f
+
+    /** 0..1: how much cave-like echo to add. */
+    @Volatile var echo: Float = 0f
 
     /** Mutes background hiss when she isn't talking, and helps stop feedback. */
     @Volatile var gateEnabled: Boolean = true
@@ -49,18 +56,39 @@ class MonsterVoice(private val sampleRate: Int) {
     private val envRelease = 1f - exp(-1.0 / (0.15 * sampleRate)).toFloat()
     private val gateSmooth = 1f - exp(-1.0 / (0.01 * sampleRate)).toFloat()
 
+    private val echoBuffer = FloatArray((sampleRate * 0.28f).toInt())
+    private var echoPos = 0
+
+    private val roarLength = (sampleRate * 1.4f).toInt()
+    @Volatile private var roarRequested = false
+    private var roarPos = -1
+    private var roarSawPhase = 0f
+    private var roarNoise = 0f
+    private var rng = 22222
+
+    /** Plays a synthesized monster roar over the live voice. */
+    fun roar() {
+        roarRequested = true
+    }
+
     /** Processes [count] 16-bit samples from [input] into [output]. */
     fun process(input: ShortArray, output: ShortArray, count: Int) {
         val ratio = 2f.pow(-semitones / 12f)
         val g = growl.coerceIn(0f, 1f)
         val vol = volume.coerceIn(0f, 2f)
+        val boost = micBoost.coerceIn(0f, 4f)
+        val e = echo.coerceIn(0f, 1f)
+        if (roarRequested) {
+            roarRequested = false
+            roarPos = 0
+        }
         for (i in 0 until count) {
-            val y = processSample(input[i] / 32768f, ratio, g, vol, gateEnabled)
+            val y = processSample(input[i] / 32768f * boost, ratio, g, vol, gateEnabled, e)
             output[i] = (y.coerceIn(-1f, 1f) * 32767f).toInt().toShort()
         }
     }
 
-    internal fun processSample(x: Float, ratio: Float, g: Float, vol: Float, gate: Boolean): Float {
+    internal fun processSample(x: Float, ratio: Float, g: Float, vol: Float, gate: Boolean, e: Float = 0f): Float {
         // Noise gate: follow the input level and fade out below a threshold.
         val level = if (x < 0) -x else x
         envelope += (level - envelope) * (if (level > envelope) envAttack else envRelease)
@@ -90,7 +118,38 @@ class MonsterVoice(private val sampleRate: Int) {
             y = tanh(y * drive) / sqrt(drive)
         }
 
-        return y * gateGain * vol
+        y *= gateGain
+
+        // Echo: a single feedback delay, applied after the gate so the tail rings out.
+        if (e > 0f) {
+            val delayed = echoBuffer[echoPos]
+            echoBuffer[echoPos] = y + delayed * (0.25f + 0.4f * e)
+            echoPos = if (echoPos + 1 == echoBuffer.size) 0 else echoPos + 1
+            y += delayed * 0.7f * e
+        }
+
+        if (roarPos >= 0) {
+            y += nextRoarSample()
+        }
+
+        return y * vol
+    }
+
+    /** A falling, rough sawtooth plus breathy noise, shaped by a swell-and-fade envelope. */
+    private fun nextRoarSample(): Float {
+        val t = roarPos.toFloat() / roarLength
+        val env = if (t < 0.15f) t / 0.15f else (1f - t) / 0.85f
+        val freq = 95f - 40f * t + 6f * sin(2f * PI.toFloat() * 7f * t)
+        roarSawPhase += freq / sampleRate
+        if (roarSawPhase >= 1f) roarSawPhase -= 1f
+        val saw = roarSawPhase * 2f - 1f
+        rng = rng * 1103515245 + 12345
+        val white = ((rng ushr 8) and 0xFFFF) / 32768f - 1f
+        roarNoise += (white - roarNoise) * 0.15f
+        val out = tanh((saw * 0.8f + roarNoise * 1.2f) * 2.5f) * 0.55f * env
+        roarPos++
+        if (roarPos >= roarLength) roarPos = -1
+        return out
     }
 
     private fun readDelayed(delay: Float): Float {

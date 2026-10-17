@@ -12,7 +12,10 @@ as you talk. Made for Halloween 2026.
    - **Deepness**: how far down the voice goes (up to one octave).
    - **Growl**: rumble and grit.
    - **Volume**: up to 200%.
-4. The voice keeps running with the screen off. Stop it from the app or the notification.
+   - **Echo**: a cave-like echo after each word.
+   - **Mic boost**: up to 400%, for a quiet voice or a mic far from the mouth.
+4. Tap **ROAR!** for a monster roar sound effect while the voice is on.
+5. The voice keeps running with the screen off. Stop it from the app or the notification.
 
 ## Installing on the phone
 

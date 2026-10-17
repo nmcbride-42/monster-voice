@@ -19,9 +19,13 @@ class MainActivity : Activity() {
     private lateinit var deepBar: SeekBar
     private lateinit var growlBar: SeekBar
     private lateinit var volumeBar: SeekBar
+    private lateinit var echoBar: SeekBar
+    private lateinit var micBar: SeekBar
     private lateinit var deepLabel: TextView
     private lateinit var growlLabel: TextView
     private lateinit var volumeLabel: TextView
+    private lateinit var echoLabel: TextView
+    private lateinit var micLabel: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,16 +38,24 @@ class MainActivity : Activity() {
         deepLabel = findViewById(R.id.deep_label)
         growlLabel = findViewById(R.id.growl_label)
         volumeLabel = findViewById(R.id.volume_label)
+        echoBar = findViewById(R.id.echo_bar)
+        micBar = findViewById(R.id.mic_bar)
+        echoLabel = findViewById(R.id.echo_label)
+        micLabel = findViewById(R.id.mic_label)
 
         // Deepness slider is in half-semitone steps, 0..12 semitones.
         deepBar.max = 24
         growlBar.max = 100
         volumeBar.max = 200
+        echoBar.max = 100
+        micBar.max = 400
 
         val prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         deepBar.progress = prefs.getInt(KEY_DEEP, 14)
         growlBar.progress = prefs.getInt(KEY_GROWL, 30)
         volumeBar.progress = prefs.getInt(KEY_VOLUME, 100)
+        echoBar.progress = prefs.getInt(KEY_ECHO, 0)
+        micBar.progress = prefs.getInt(KEY_MIC, 100)
 
         val listener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(bar: SeekBar, value: Int, fromUser: Boolean) = applySettings()
@@ -53,11 +65,18 @@ class MainActivity : Activity() {
         deepBar.setOnSeekBarChangeListener(listener)
         growlBar.setOnSeekBarChangeListener(listener)
         volumeBar.setOnSeekBarChangeListener(listener)
+        echoBar.setOnSeekBarChangeListener(listener)
+        micBar.setOnSeekBarChangeListener(listener)
 
-        findViewById<Button>(R.id.preset_grumbly).setOnClickListener { preset(deep = 8, growl = 15) }
-        findViewById<Button>(R.id.preset_beast).setOnClickListener { preset(deep = 14, growl = 40) }
-        findViewById<Button>(R.id.preset_giant).setOnClickListener { preset(deep = 20, growl = 20) }
-        findViewById<Button>(R.id.preset_demon).setOnClickListener { preset(deep = 24, growl = 80) }
+        findViewById<Button>(R.id.preset_grumbly).setOnClickListener { preset(deep = 8, growl = 15, echo = 0) }
+        findViewById<Button>(R.id.preset_beast).setOnClickListener { preset(deep = 14, growl = 40, echo = 0) }
+        findViewById<Button>(R.id.preset_giant).setOnClickListener { preset(deep = 20, growl = 20, echo = 35) }
+        findViewById<Button>(R.id.preset_demon).setOnClickListener { preset(deep = 24, growl = 80, echo = 25) }
+
+        findViewById<Button>(R.id.roar_button).setOnClickListener {
+            if (VoiceService.isRunning) voice.roar()
+            else Toast.makeText(this, R.string.roar_needs_start, Toast.LENGTH_SHORT).show()
+        }
 
         startButton.setOnClickListener {
             if (VoiceService.isRunning) stopVoice() else startVoiceWithPermission()
@@ -71,9 +90,10 @@ class MainActivity : Activity() {
         updateButton()
     }
 
-    private fun preset(deep: Int, growl: Int) {
+    private fun preset(deep: Int, growl: Int, echo: Int) {
         deepBar.progress = deep
         growlBar.progress = growl
+        echoBar.progress = echo
         saveSettings()
     }
 
@@ -82,9 +102,13 @@ class MainActivity : Activity() {
         voice.semitones = semis
         voice.growl = growlBar.progress / 100f
         voice.volume = volumeBar.progress / 100f
+        voice.echo = echoBar.progress / 100f
+        voice.micBoost = micBar.progress / 100f
         deepLabel.text = getString(R.string.deepness_value, semis)
         growlLabel.text = getString(R.string.growl_value, growlBar.progress)
         volumeLabel.text = getString(R.string.volume_value, volumeBar.progress)
+        echoLabel.text = getString(R.string.echo_value, echoBar.progress)
+        micLabel.text = getString(R.string.mic_value, micBar.progress)
     }
 
     private fun saveSettings() {
@@ -92,6 +116,8 @@ class MainActivity : Activity() {
             .putInt(KEY_DEEP, deepBar.progress)
             .putInt(KEY_GROWL, growlBar.progress)
             .putInt(KEY_VOLUME, volumeBar.progress)
+            .putInt(KEY_ECHO, echoBar.progress)
+            .putInt(KEY_MIC, micBar.progress)
             .apply()
     }
 
@@ -135,6 +161,8 @@ class MainActivity : Activity() {
         private const val KEY_DEEP = "deep"
         private const val KEY_GROWL = "growl"
         private const val KEY_VOLUME = "volume"
+        private const val KEY_ECHO = "echo"
+        private const val KEY_MIC = "mic"
         private const val REQUEST_PERMISSIONS = 1
     }
 }

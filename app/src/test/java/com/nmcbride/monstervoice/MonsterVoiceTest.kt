@@ -58,4 +58,32 @@ class MonsterVoiceTest {
         val out = run(voice, sine(200.0, 1.0, amp = 1.0))
         assertTrue(out.any { abs(it.toInt()) > 1000 })
     }
+
+    @Test
+    fun roarPlaysOverSilence() {
+        val voice = MonsterVoice(rate)
+        voice.roar()
+        val out = run(voice, ShortArray(rate))
+        assertTrue(out.any { abs(it.toInt()) > 3000 })
+    }
+
+    @Test
+    fun echoRepeatsAfterTheVoiceStops() {
+        val voice = MonsterVoice(rate).apply { semitones = 0f; growl = 0f; echo = 1f; gateEnabled = false }
+        val input = ShortArray(rate)
+        sine(300.0, 0.1).copyInto(input)
+        val out = run(voice, input)
+        // The direct sound ends after 0.1 s plus the shifter's short delay; the echo arrives ~0.28 s in.
+        val echoWindow = out.copyOfRange((rate * 0.3).toInt(), (rate * 0.36).toInt())
+        assertTrue(echoWindow.any { abs(it.toInt()) > 2000 })
+    }
+
+    @Test
+    fun micBoostMakesAQuietVoiceLouder() {
+        fun peak(boost: Float): Int {
+            val voice = MonsterVoice(rate).apply { semitones = 0f; growl = 0f; gateEnabled = false; micBoost = boost }
+            return run(voice, sine(300.0, 0.5, amp = 0.05)).maxOf { abs(it.toInt()) }
+        }
+        assertTrue(peak(3f) > peak(1f) * 2)
+    }
 }

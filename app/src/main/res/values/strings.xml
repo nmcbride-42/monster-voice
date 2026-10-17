@@ -11,7 +11,11 @@
     <string name="deepness_value">Deepness: %1$.1f</string>
     <string name="growl_value">Growl: %1$d%%</string>
     <string name="volume_value">Volume: %1$d%%</string>
+    <string name="roar">ROAR!</string>
+    <string name="echo_value">Echo: %1$d%%</string>
+    <string name="mic_value">Mic boost: %1$d%%</string>
     <string name="speaker_tip">Tip: plug in headphones or a small speaker before pressing START. If the phone\'s own speaker plays the voice, the mic hears it and it squeals. Turning the volume down also helps.</string>
+    <string name="roar_needs_start">Press START first, then ROAR!</string>
     <string name="need_mic">Monster Voice needs the microphone to work.</string>
     <string name="channel_name">Monster voice</string>
     <string name="notification_title">Monster voice is on</string>

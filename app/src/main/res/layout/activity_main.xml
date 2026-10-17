@@ -67,6 +67,17 @@
                 android:text="@string/preset_demon" />
         </LinearLayout>
 
+        <Button
+            android:id="@+id/roar_button"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@color/roar"
+            android:text="@string/roar"
+            android:textColor="@color/text"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
         <TextView
             android:id="@+id/deep_label"
             style="@style/SectionTitle" />
@@ -89,6 +100,22 @@
 
         <SeekBar
             android:id="@+id/volume_bar"
+            style="@style/Slider" />
+
+        <TextView
+            android:id="@+id/echo_label"
+            style="@style/SectionTitle" />
+
+        <SeekBar
+            android:id="@+id/echo_bar"
+            style="@style/Slider" />
+
+        <TextView
+            android:id="@+id/mic_label"
+            style="@style/SectionTitle" />
+
+        <SeekBar
+            android:id="@+id/mic_bar"
             style="@style/Slider" />
 
         <TextView

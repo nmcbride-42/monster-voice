@@ -4,5 +4,6 @@
     <color name="surface">#FF2A1A38</color>
     <color name="accent">#FF7CFF4F</color>
     <color name="text">#FFF2ECF7</color>
+    <color name="roar">#FFB3261E</color>
     <color name="muted">#FFB3A6BF</color>
 </resources>
