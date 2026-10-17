@@ -25,7 +25,7 @@ import kotlin.math.sqrt
  */
 class VoiceService : Service(), SensorEventListener {
 
-    private val engine = AudioEngine(voice)
+    private val engine by lazy { AudioEngine(this, voice) }
     private var wakeLock: PowerManager.WakeLock? = null
     private var sensorManager: SensorManager? = null
     private var lastShake = 0L

@@ -54,6 +54,20 @@ object OutputRouter {
         return (all.firstOrNull { it.key == key } ?: all.first()).label
     }
 
+    /**
+     * True when the voice should go to the phone's own loud speaker: either it
+     * was picked, or Automatic is on and no headphones or speaker are connected.
+     */
+    fun wantsSpeakerphone(context: Context): Boolean {
+        val key = savedKey(context)
+        val external = outputs(context).filter { it.device != null && it.device.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+        return when {
+            key == AUTO -> external.isEmpty()
+            key.startsWith("${AudioDeviceInfo.TYPE_BUILTIN_SPEAKER}|") -> true
+            else -> external.none { it.key == key } // the picked device is gone
+        }
+    }
+
     fun apply(track: AudioTrack) {
         track.preferredDevice = chosen
     }
@@ -64,7 +78,6 @@ object OutputRouter {
         val name = d.productName?.toString()?.takeIf { it.isNotBlank() && it != Build.MODEL }
         return when (d.type) {
             AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> context.getString(R.string.output_speaker)
-            AudioDeviceInfo.TYPE_BUILTIN_EARPIECE -> context.getString(R.string.output_earpiece)
             AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
             AudioDeviceInfo.TYPE_WIRED_HEADSET -> context.getString(R.string.output_wired)
             AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,

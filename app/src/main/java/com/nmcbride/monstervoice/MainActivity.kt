@@ -7,6 +7,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
@@ -404,6 +405,7 @@ class MainActivity : Activity() {
                 OutputRouter.choose(this, outputs[which])
                 outputChip.text = outputs[which].label
                 VoiceService.reroute()
+                updateLiveState()
                 dialog.dismiss()
             }
             .setNegativeButton(R.string.cancel, null)
@@ -445,6 +447,8 @@ class MainActivity : Activity() {
 
     private fun updateLiveState() {
         val on = VoiceService.isRunning
+        // In speakerphone mode the volume buttons need to control call volume.
+        volumeControlStream = if (on && OutputRouter.wantsSpeakerphone(this)) AudioManager.STREAM_VOICE_CALL else AudioManager.STREAM_MUSIC
         micButton.isOn = on
         micButton.contentDescription = getString(if (on) R.string.stop else R.string.start)
         statusText.setText(if (on) R.string.status_on else R.string.status_off)

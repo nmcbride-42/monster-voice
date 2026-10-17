@@ -1,6 +1,10 @@
 package com.nmcbride.monstervoice
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.os.Build
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -12,8 +16,14 @@ import android.util.Log
 /**
  * Reads the microphone, runs it through [voice] and plays it straight back out,
  * on a dedicated high-priority audio thread.
+ *
+ * Many phones send audio to the quiet earpiece while the mic is recording, so
+ * when the loud speaker is wanted the engine uses speakerphone (communication)
+ * mode, which forces the loudspeaker and also turns on echo cancellation.
  */
-class AudioEngine(private val voice: MonsterVoice) {
+class AudioEngine(private val context: Context, private val voice: MonsterVoice) {
+
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     @Volatile private var running = false
     @Volatile private var activeTrack: AudioTrack? = null
@@ -25,10 +35,18 @@ class AudioEngine(private val voice: MonsterVoice) {
         thread = Thread(::loop, "MonsterVoiceAudio").also { it.start() }
     }
 
-    /** Re-applies the chosen speaker while running. */
+    /** Switches to the newly chosen speaker, restarting if speakerphone mode changes. */
     fun reroute() {
-        activeTrack?.let { OutputRouter.apply(it) }
+        if (!running) return
+        if (OutputRouter.wantsSpeakerphone(context) != speakerphone) {
+            stop()
+            start()
+        } else {
+            activeTrack?.let { OutputRouter.apply(it) }
+        }
     }
+
+    @Volatile private var speakerphone = false
 
     fun stop() {
         running = false
@@ -43,11 +61,15 @@ class AudioEngine(private val voice: MonsterVoice) {
         val inMin = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
         val outMin = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
 
+        val useSpeakerphone = OutputRouter.wantsSpeakerphone(context)
+        speakerphone = useSpeakerphone
+        if (useSpeakerphone) enterSpeakerphone()
+
         var record: AudioRecord? = null
         var track: AudioTrack? = null
         try {
             record = AudioRecord(
-                MediaRecorder.AudioSource.MIC,
+                if (useSpeakerphone) MediaRecorder.AudioSource.VOICE_COMMUNICATION else MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
@@ -56,7 +78,7 @@ class AudioEngine(private val voice: MonsterVoice) {
             track = AudioTrack.Builder()
                 .setAudioAttributes(
                     AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setUsage(if (useSpeakerphone) AudioAttributes.USAGE_VOICE_COMMUNICATION else AudioAttributes.USAGE_MEDIA)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                         .build()
                 )
@@ -72,7 +94,7 @@ class AudioEngine(private val voice: MonsterVoice) {
                 .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
                 .build()
 
-            OutputRouter.apply(track)
+            if (!useSpeakerphone) OutputRouter.apply(track)
             activeTrack = track
 
             if (record.state != AudioRecord.STATE_INITIALIZED) {
@@ -100,7 +122,30 @@ class AudioEngine(private val voice: MonsterVoice) {
             runCatching { track?.stop() }
             record?.release()
             track?.release()
+            if (useSpeakerphone) leaveSpeakerphone()
         }
+    }
+
+    private fun enterSpeakerphone() {
+        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            audioManager.availableCommunicationDevices
+                .firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+                ?.let { audioManager.setCommunicationDevice(it) }
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager.isSpeakerphoneOn = true
+        }
+    }
+
+    private fun leaveSpeakerphone() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            audioManager.clearCommunicationDevice()
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager.isSpeakerphoneOn = false
+        }
+        audioManager.mode = AudioManager.MODE_NORMAL
     }
 
     companion object {
