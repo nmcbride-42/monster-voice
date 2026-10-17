@@ -32,11 +32,13 @@ class Recorder {
                     MediaRecorder.AudioSource.MIC, AudioEngine.SAMPLE_RATE,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, min * 2
                 )
+                val suppressor = PhoneNoiseSuppressor.attach(record, VoiceService.voice.noiseFilter)
                 record.startRecording()
                 while (running && length < samples.size) {
                     val n = record.read(samples, length, minOf(1024, samples.size - length))
                     if (n > 0) length += n
                 }
+                suppressor?.release()
             } catch (e: Exception) {
                 Log.e("Recorder", "Recording failed", e)
             } finally {

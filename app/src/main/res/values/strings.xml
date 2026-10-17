@@ -48,6 +48,7 @@
     <string name="echo">Echo</string>
     <string name="volume">Volume</string>
     <string name="mic_boost">Mic boost</string>
+    <string name="noise_filter">Noise filter</string>
     <string name="semitones_value">%1$.1f</string>
     <string name="percent_value">%1$d%%</string>
 

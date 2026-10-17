@@ -36,6 +36,7 @@ class MainActivity : Activity() {
     private lateinit var echoBar: SeekBar
     private lateinit var volumeBar: SeekBar
     private lateinit var micBar: SeekBar
+    private lateinit var noiseBar: SeekBar
     private lateinit var mineChip: TextView
     private lateinit var outputChip: TextView
     private val chips = mutableListOf<TextView>()
@@ -117,6 +118,7 @@ class MainActivity : Activity() {
         echoBar = findViewById(R.id.echo_bar)
         volumeBar = findViewById(R.id.volume_bar)
         micBar = findViewById(R.id.mic_bar)
+        noiseBar = findViewById(R.id.noise_bar)
 
         // Deepness is in half-semitone steps, 0..12 semitones.
         deepBar.max = 24
@@ -124,23 +126,25 @@ class MainActivity : Activity() {
         echoBar.max = 100
         volumeBar.max = 200
         micBar.max = 400
+        noiseBar.max = 100
 
         deepBar.progress = prefs.getInt(KEY_DEEP, 14)
         growlBar.progress = prefs.getInt(KEY_GROWL, 40)
         echoBar.progress = prefs.getInt(KEY_ECHO, 0)
         volumeBar.progress = prefs.getInt(KEY_VOLUME, 100)
         micBar.progress = prefs.getInt(KEY_MIC, 100)
+        noiseBar.progress = prefs.getInt(KEY_NOISE, 50)
 
         val listener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(bar: SeekBar, value: Int, fromUser: Boolean) {
                 applySettings()
-                if (fromUser && bar !== volumeBar && bar !== micBar) selectChip(null)
+                if (fromUser && bar !== volumeBar && bar !== micBar && bar !== noiseBar) selectChip(null)
             }
 
             override fun onStartTrackingTouch(bar: SeekBar) {}
             override fun onStopTrackingTouch(bar: SeekBar) = saveSettings()
         }
-        listOf(deepBar, growlBar, echoBar, volumeBar, micBar).forEach { it.setOnSeekBarChangeListener(listener) }
+        listOf(deepBar, growlBar, echoBar, volumeBar, micBar, noiseBar).forEach { it.setOnSeekBarChangeListener(listener) }
     }
 
     private fun applySettings() {
@@ -150,11 +154,13 @@ class MainActivity : Activity() {
         voice.echo = echoBar.progress / 100f
         voice.volume = volumeBar.progress / 100f
         voice.micBoost = micBar.progress / 100f
+        voice.noiseFilter = noiseBar.progress / 100f
         findViewById<TextView>(R.id.deep_value).text = getString(R.string.semitones_value, semis)
         findViewById<TextView>(R.id.growl_value).text = getString(R.string.percent_value, growlBar.progress)
         findViewById<TextView>(R.id.echo_value).text = getString(R.string.percent_value, echoBar.progress)
         findViewById<TextView>(R.id.volume_value).text = getString(R.string.percent_value, volumeBar.progress)
         findViewById<TextView>(R.id.mic_value).text = getString(R.string.percent_value, micBar.progress)
+        findViewById<TextView>(R.id.noise_value).text = getString(R.string.percent_value, noiseBar.progress)
     }
 
     private fun saveSettings() {
@@ -164,6 +170,7 @@ class MainActivity : Activity() {
             .putInt(KEY_ECHO, echoBar.progress)
             .putInt(KEY_VOLUME, volumeBar.progress)
             .putInt(KEY_MIC, micBar.progress)
+            .putInt(KEY_NOISE, noiseBar.progress)
             .apply()
     }
 
@@ -334,6 +341,7 @@ class MainActivity : Activity() {
             growl = voice.growl
             echo = voice.echo
             micBoost = voice.micBoost
+            noiseFilter = voice.noiseFilter
         }
         Thread {
             val sound = fx.render(raw)
@@ -508,6 +516,7 @@ class MainActivity : Activity() {
         private const val KEY_ECHO = "echo"
         private const val KEY_VOLUME = "volume"
         private const val KEY_MIC = "mic"
+        private const val KEY_NOISE = "noise"
         private const val KEY_SHAKE = "shake"
         private const val KEY_CHIP = "chip"
         private const val KEY_MINE_NAME = "mine_name"

@@ -71,6 +71,7 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
 
         var record: AudioRecord? = null
         var track: AudioTrack? = null
+        var suppressor: PhoneNoiseSuppressor? = null
         try {
             record = AudioRecord(
                 if (route.callMode) MediaRecorder.AudioSource.VOICE_COMMUNICATION else MediaRecorder.AudioSource.MIC,
@@ -99,6 +100,7 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
                 .build()
 
             if (!route.callMode) OutputRouter.apply(track)
+            suppressor = PhoneNoiseSuppressor.attach(record, voice.noiseFilter)
             activeTrack = track
 
             if (record.state != AudioRecord.STATE_INITIALIZED) {
@@ -117,7 +119,10 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
                 if (n <= 0) continue
                 voice.process(input, output, n)
                 track.write(output, 0, n)
-                if (chunks++ % 50 == 0) routedDevice = track.routedDevice
+                if (chunks++ % 50 == 0) {
+                    routedDevice = track.routedDevice
+                    suppressor?.update(voice.noiseFilter)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Audio loop failed", e)
@@ -127,6 +132,7 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
             routedDevice = null
             runCatching { record?.stop() }
             runCatching { track?.stop() }
+            suppressor?.release()
             record?.release()
             track?.release()
             if (route.callMode) leaveSpeakerphone()

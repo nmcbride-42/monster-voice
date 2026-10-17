@@ -11,7 +11,7 @@ import kotlin.math.tanh
  * The monster voice effect. Pure Kotlin with no Android dependencies, so it
  * can be unit tested on the JVM.
  *
- * Signal chain: mic boost -> noise gate -> pitch shift down -> growl (rumble + grit)
+ * Signal chain: mic boost -> voice-band filter + noise gate -> pitch shift down -> growl (rumble + grit)
  * -> echo -> sound effects (roar, recorded clips) -> volume.
  *
  * The pitch shifter is a classic two-tap delay-line shifter: two read heads
@@ -38,6 +38,13 @@ class MonsterVoice(private val sampleRate: Int) {
     /** Mutes background hiss when she isn't talking, and helps stop feedback. */
     @Volatile var gateEnabled: Boolean = true
 
+    /**
+     * 0..1: how hard to filter out background noise. Cuts rumble and hiss
+     * outside the voice range, and raises the gate so quieter sounds than
+     * her voice are muted.
+     */
+    @Volatile var noiseFilter: Float = 0.5f
+
     private val window = (sampleRate * 0.05f).toInt()
     private val buffer = FloatArray(nextPowerOfTwo(window * 2 + 8))
     private val mask = buffer.size - 1
@@ -55,6 +62,12 @@ class MonsterVoice(private val sampleRate: Int) {
     private val envAttack = 1f - exp(-1.0 / (0.005 * sampleRate)).toFloat()
     private val envRelease = 1f - exp(-1.0 / (0.15 * sampleRate)).toFloat()
     private val gateSmooth = 1f - exp(-1.0 / (0.01 * sampleRate)).toFloat()
+    private val gateHold = (sampleRate * 0.2f).toInt()
+    private var holdLeft = 0
+    private var nf = 0.5f
+
+    private val highPass = Biquad.highPass(sampleRate, 110.0)
+    private val lowPass = Biquad.lowPass(sampleRate, 6500.0)
 
     private val echoBuffer = FloatArray((sampleRate * 0.28f).toInt())
     private var echoPos = 0
@@ -79,6 +92,7 @@ class MonsterVoice(private val sampleRate: Int) {
         val vol = volume.coerceIn(0f, 2f)
         val boost = micBoost.coerceIn(0f, 4f)
         val e = echo.coerceIn(0f, 1f)
+        nf = noiseFilter.coerceIn(0f, 1f)
         pendingSound?.let {
             pendingSound = null
             overlaySound = it
@@ -100,6 +114,7 @@ class MonsterVoice(private val sampleRate: Int) {
         val g = growl.coerceIn(0f, 1f)
         val boost = micBoost.coerceIn(0f, 4f)
         val e = echo.coerceIn(0f, 1f)
+        nf = noiseFilter.coerceIn(0f, 1f)
         val tail = if (e > 0f) sampleRate else sampleRate / 10
         val out = FloatArray(input.size + tail)
         for (i in out.indices) {
@@ -113,11 +128,27 @@ class MonsterVoice(private val sampleRate: Int) {
         return out
     }
 
-    internal fun processSample(x: Float, ratio: Float, g: Float, vol: Float, gate: Boolean, e: Float = 0f): Float {
-        // Noise gate: follow the input level and fade out below a threshold.
+    internal fun processSample(input: Float, ratio: Float, g: Float, vol: Float, gate: Boolean, e: Float = 0f): Float {
+        // Keep only the voice range: drop rumble (wind, traffic, handling) and hiss.
+        val x = if (nf > 0f) lowPass.process(highPass.process(input)) else input
+
+        // Noise gate: follow the level, hold open briefly between words, and
+        // fade quieter-than-voice sounds down smoothly instead of chopping them.
         val level = if (x < 0) -x else x
         envelope += (level - envelope) * (if (level > envelope) envAttack else envRelease)
-        val gateTarget = if (!gate || envelope > GATE_THRESHOLD) 1f else 0f
+        val threshold = GATE_THRESHOLD + 0.03f * nf
+        val gateTarget = when {
+            !gate -> 1f
+            envelope > threshold -> {
+                holdLeft = gateHold
+                1f
+            }
+            holdLeft > 0 -> {
+                holdLeft--
+                1f
+            }
+            else -> (envelope / threshold).let { it * it }
+        }
         gateGain += (gateTarget - gateGain) * gateSmooth
 
         // Pitch shift.
@@ -171,12 +202,51 @@ class MonsterVoice(private val sampleRate: Int) {
     }
 
     companion object {
-        const val GATE_THRESHOLD = 0.012f
+        const val GATE_THRESHOLD = 0.006f
 
         private fun nextPowerOfTwo(n: Int): Int {
             var p = 1
             while (p < n) p = p shl 1
             return p
+        }
+    }
+}
+
+/** A standard second-order filter (RBJ cookbook), used to keep just the voice range. */
+internal class Biquad private constructor(
+    private val b0: Float, private val b1: Float, private val b2: Float,
+    private val a1: Float, private val a2: Float,
+) {
+    private var x1 = 0f
+    private var x2 = 0f
+    private var y1 = 0f
+    private var y2 = 0f
+
+    fun process(x: Float): Float {
+        val y = b0 * x + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2
+        x2 = x1; x1 = x
+        y2 = y1; y1 = y
+        return y
+    }
+
+    companion object {
+        private const val Q = 0.7071
+
+        fun highPass(rate: Int, freq: Double) = make(rate, freq, high = true)
+
+        fun lowPass(rate: Int, freq: Double) = make(rate, freq, high = false)
+
+        private fun make(rate: Int, freq: Double, high: Boolean): Biquad {
+            val w = 2.0 * PI * freq / rate
+            val cw = kotlin.math.cos(w)
+            val alpha = sin(w) / (2.0 * Q)
+            val a0 = 1.0 + alpha
+            val b0 = if (high) (1.0 + cw) / 2.0 else (1.0 - cw) / 2.0
+            val b1 = if (high) -(1.0 + cw) else 1.0 - cw
+            return Biquad(
+                (b0 / a0).toFloat(), (b1 / a0).toFloat(), (b0 / a0).toFloat(),
+                (-2.0 * cw / a0).toFloat(), ((1.0 - alpha) / a0).toFloat(),
+            )
         }
     }
 }

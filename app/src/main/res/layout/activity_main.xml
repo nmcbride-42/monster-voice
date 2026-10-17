@@ -184,6 +184,13 @@
             <SeekBar android:id="@+id/volume_bar" style="@style/Slider" />
 
             <LinearLayout style="@style/SliderRow">
+                <TextView style="@style/SliderLabel" android:text="@string/noise_filter" />
+                <TextView android:id="@+id/noise_value" style="@style/SliderValue" />
+            </LinearLayout>
+
+            <SeekBar android:id="@+id/noise_bar" style="@style/Slider" />
+
+            <LinearLayout style="@style/SliderRow">
                 <TextView style="@style/SliderLabel" android:text="@string/mic_boost" />
                 <TextView android:id="@+id/mic_value" style="@style/SliderValue" />
             </LinearLayout>

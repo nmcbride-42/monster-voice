@@ -103,4 +103,25 @@ class MonsterVoiceTest {
         val end = roar.copyOfRange(roar.size - rate / 100, roar.size)
         assertTrue(end.all { abs(it) < 0.05f })
     }
+
+    @Test
+    fun noiseFilterCutsRumbleButKeepsVoice() {
+        fun peak(freq: Double, filter: Float): Int {
+            val voice = MonsterVoice(rate).apply { semitones = 0f; growl = 0f; gateEnabled = false; noiseFilter = filter }
+            val out = run(voice, sine(freq, 1.0, amp = 0.3))
+            return out.copyOfRange(rate / 2, rate).maxOf { abs(it.toInt()) }
+        }
+        assertTrue(peak(30.0, 1f) < peak(30.0, 0f) / 4)
+        assertTrue(peak(300.0, 1f) > peak(300.0, 0f) * 0.8)
+    }
+
+    @Test
+    fun strongerNoiseFilterMutesQuietBackgroundVoices() {
+        fun tailPeak(filter: Float): Int {
+            val voice = MonsterVoice(rate).apply { semitones = 0f; growl = 0f; noiseFilter = filter }
+            val out = run(voice, sine(300.0, 1.0, amp = 0.015))
+            return out.copyOfRange(rate / 2, rate).maxOf { abs(it.toInt()) }
+        }
+        assertTrue(tailPeak(1f) < tailPeak(0f) / 3)
+    }
 }
