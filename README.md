@@ -7,15 +7,16 @@ as you talk. Made for Halloween 2026.
 
 1. Plug in headphones or a small speaker (wired or Bluetooth). If the phone's own
    speaker plays the voice, the microphone hears it and it squeals.
-2. Open **Monster Voice** and press **START**. Allow the microphone the first time.
-3. Pick a monster (Grumbly, Beast, Giant, Demon) or use the sliders:
-   - **Deepness**: how far down the voice goes (up to one octave).
-   - **Growl**: rumble and grit.
-   - **Volume**: up to 200%.
-   - **Echo**: a cave-like echo after each word.
-   - **Mic boost**: up to 400%, for a quiet voice or a mic far from the mouth.
-4. Tap **ROAR!** for a monster roar sound effect while the voice is on.
-5. The voice keeps running with the screen off. Stop it from the app or the notification.
+2. Tap the big round button to go live. Allow the microphone the first time. The ring
+   around it glows with your voice.
+3. **Sounds**: tap **ROAR** for a monster roar. The other three pads are yours: hold one
+   and say a line ("Trick or treat!"), let go, and name it. It's saved in your monster
+   voice, and a tap plays it. Use ⋮ on a pad to rename, share, or delete it.
+4. **Monster**: pick Grumbly, Beast, Giant or Demon. Tune the sliders, then hold
+   **★ My Monster** to save and name your own.
+5. **Tune**: Deepness (up to one octave down), Growl, Echo, Volume, and Mic boost.
+6. **Shake to roar**: while live, shake the phone to roar.
+7. The voice keeps running with the screen off. Stop it from the app or the notification.
 
 ## Installing on the phone
 

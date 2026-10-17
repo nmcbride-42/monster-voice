@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#FF140B1C</color>
-    <color name="surface">#FF2A1A38</color>
-    <color name="accent">#FF7CFF4F</color>
-    <color name="text">#FFF2ECF7</color>
-    <color name="roar">#FFB3261E</color>
-    <color name="muted">#FFB3A6BF</color>
+    <color name="background">#FF0D0A12</color>
+    <color name="background_top">#FF1C1030</color>
+    <color name="surface">#FF17121F</color>
+    <color name="surface_raised">#FF221A2E</color>
+    <color name="stroke">#FF2E2540</color>
+    <color name="accent">#FF8CFF5A</color>
+    <color name="accent_deep">#FF2FD47A</color>
+    <color name="roar">#FFFF5A3D</color>
+    <color name="roar_deep">#FFC2183F</color>
+    <color name="record">#FFFF3B5C</color>
+    <color name="text">#FFF4F0FA</color>
+    <color name="muted">#FF9B90AD</color>
 </resources>

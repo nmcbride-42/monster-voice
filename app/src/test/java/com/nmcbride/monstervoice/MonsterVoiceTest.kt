@@ -62,7 +62,7 @@ class MonsterVoiceTest {
     @Test
     fun roarPlaysOverSilence() {
         val voice = MonsterVoice(rate)
-        voice.roar()
+        voice.playSound(RoarSynth.create(rate, 1))
         val out = run(voice, ShortArray(rate))
         assertTrue(out.any { abs(it.toInt()) > 3000 })
     }
@@ -85,5 +85,22 @@ class MonsterVoiceTest {
             return run(voice, sine(300.0, 0.5, amp = 0.05)).maxOf { abs(it.toInt()) }
         }
         assertTrue(peak(3f) > peak(1f) * 2)
+    }
+
+    @Test
+    fun renderedClipIsDeepAndNormalized() {
+        val voice = MonsterVoice(rate).apply { semitones = 12f; growl = 0f; gateEnabled = false }
+        val clip = voice.render(sine(400.0, 1.0, amp = 0.2))
+        assertTrue(clip.maxOf { abs(it) } > 0.85f)
+        val asShorts = ShortArray(rate) { (clip[it] * 32767).toInt().toShort() }
+        assertEquals(200.0, frequencyOf(asShorts, rate / 2), 20.0)
+    }
+
+    @Test
+    fun roarIsLoudRoughAndEndsQuietly() {
+        val roar = RoarSynth.create(rate, 7)
+        assertTrue(roar.maxOf { abs(it) } > 0.7f)
+        val end = roar.copyOfRange(roar.size - rate / 100, roar.size)
+        assertTrue(end.all { abs(it) < 0.05f })
     }
 }

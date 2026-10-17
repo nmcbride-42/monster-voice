@@ -8,18 +8,28 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.os.SystemClock
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 /**
  * Foreground service that keeps the voice running when the screen turns off
- * or the phone goes in a pocket.
+ * or the phone goes in a pocket. Also listens for shakes to trigger a roar.
  */
-class VoiceService : Service() {
+class VoiceService : Service(), SensorEventListener {
 
     private val engine = AudioEngine(voice)
     private var wakeLock: PowerManager.WakeLock? = null
+    private var sensorManager: SensorManager? = null
+    private var lastShake = 0L
+    private var roarSeed = 100
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -44,12 +54,35 @@ class VoiceService : Service() {
             }
         }
 
+        if (sensorManager == null) {
+            sensorManager = (getSystemService(Context.SENSOR_SERVICE) as SensorManager).also { sm ->
+                sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
+                    sm.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
+                }
+            }
+        }
+
         engine.start()
         isRunning = true
         return START_NOT_STICKY
     }
 
+    override fun onSensorChanged(event: SensorEvent) {
+        if (!shakeEnabled) return
+        val (x, y, z) = Triple(event.values[0], event.values[1], event.values[2])
+        val force = abs(sqrt(x * x + y * y + z * z) - SensorManager.GRAVITY_EARTH)
+        val now = SystemClock.elapsedRealtime()
+        if (force > SHAKE_FORCE && now - lastShake > SHAKE_COOLDOWN_MS) {
+            lastShake = now
+            voice.playSound(RoarSynth.create(AudioEngine.SAMPLE_RATE, roarSeed++))
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
     override fun onDestroy() {
+        sensorManager?.unregisterListener(this)
+        sensorManager = null
         engine.stop()
         wakeLock?.release()
         wakeLock = null
@@ -86,6 +119,11 @@ class VoiceService : Service() {
 
         @Volatile var isRunning = false
             private set
+
+        @Volatile var shakeEnabled = false
+
+        private const val SHAKE_FORCE = 14f
+        private const val SHAKE_COOLDOWN_MS = 1800L
 
         const val ACTION_STOP = "com.nmcbride.monstervoice.STOP"
         private const val CHANNEL_ID = "monster_voice"

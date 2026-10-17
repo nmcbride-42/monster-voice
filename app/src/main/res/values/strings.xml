@@ -1,23 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Monster Voice</string>
-    <string name="start">START</string>
-    <string name="stop">STOP</string>
-    <string name="presets">Monsters</string>
+    <string name="tagline">Your voice, but scarier.</string>
+    <string name="status_off">Plug in headphones or a speaker, then tap the button.</string>
+    <string name="status_on">Talk! Your monster voice is live.</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+
+    <string name="monster">Monster</string>
+    <string name="monster_hint">Hold ★ to save your own</string>
     <string name="preset_grumbly">Grumbly</string>
     <string name="preset_beast">Beast</string>
     <string name="preset_giant">Giant</string>
     <string name="preset_demon">Demon</string>
-    <string name="deepness_value">Deepness: %1$.1f</string>
-    <string name="growl_value">Growl: %1$d%%</string>
-    <string name="volume_value">Volume: %1$d%%</string>
-    <string name="roar">ROAR!</string>
-    <string name="echo_value">Echo: %1$d%%</string>
-    <string name="mic_value">Mic boost: %1$d%%</string>
-    <string name="speaker_tip">Tip: plug in headphones or a small speaker before pressing START. If the phone\'s own speaker plays the voice, the mic hears it and it squeals. Turning the volume down also helps.</string>
-    <string name="roar_needs_start">Press START first, then ROAR!</string>
+    <string name="preset_mine">★ My Monster</string>
+    <string name="preset_mine_named">★ %1$s</string>
+    <string name="mine_empty">Hold ★ to save the current sound as your monster.</string>
+    <string name="mine_saved">Saved as %1$s!</string>
+    <string name="name_monster">Name your monster</string>
+
+    <string name="sounds">Sounds</string>
+    <string name="sounds_hint">Hold a pad to record</string>
+    <string name="roar">ROAR</string>
+    <string name="roar_hint">Tap to roar</string>
+    <string name="pad_empty">Empty</string>
+    <string name="pad_empty_hint">Hold to record</string>
+    <string name="pad_ready_hint">Tap to play</string>
+    <string name="pad_recording">Recording…</string>
+    <string name="pad_recording_hint">Let go to stop</string>
+    <string name="pad_options">Sound options</string>
+    <string name="name_sound">Name this sound</string>
+    <string name="sound_default_name">Sound %1$d</string>
+    <string name="sound_name_hint">Trick or treat!</string>
+    <string name="too_short">Too short. Hold the pad while you talk.</string>
+    <string name="rename">Rename</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="share_unsupported">Sharing needs Android 10 or newer.</string>
+    <string name="share_failed">Couldn\'t share that sound.</string>
+
+    <string name="tune">Tune</string>
+    <string name="deepness">Deepness</string>
+    <string name="growl">Growl</string>
+    <string name="echo">Echo</string>
+    <string name="volume">Volume</string>
+    <string name="mic_boost">Mic boost</string>
+    <string name="semitones_value">%1$.1f</string>
+    <string name="percent_value">%1$d%%</string>
+
+    <string name="extras">Extras</string>
+    <string name="shake_to_roar">Shake to roar</string>
+    <string name="shake_hint">Shake the phone to roar while live.</string>
+
+    <string name="speaker_tip">Tip: if the phone\'s own speaker plays the voice, the mic hears it and squeals. Use headphones or a small speaker, or turn the volume down.</string>
     <string name="need_mic">Monster Voice needs the microphone to work.</string>
     <string name="channel_name">Monster voice</string>
     <string name="notification_title">Monster voice is on</string>
     <string name="notification_text">Tap to change the voice</string>
+
+    <string name="icon_mic">🎙️</string>
+    <string name="icon_roar">👹</string>
+    <string name="icon_sound">🔊</string>
+    <string name="icon_more">⋮</string>
 </resources>

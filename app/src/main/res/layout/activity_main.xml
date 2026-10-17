@@ -2,128 +2,239 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@drawable/bg_screen"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="20dp"
+        android:paddingTop="28dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="32dp">
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/app_name"
+            android:textColor="@color/text"
+            android:textSize="30sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/tagline"
+            android:textColor="@color/muted"
+            android:textSize="15sp" />
+
+        <com.nmcbride.monstervoice.MicButton
+            android:id="@+id/mic_button"
+            android:layout_width="260dp"
+            android:layout_height="260dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:contentDescription="@string/start"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/status_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@string/app_name"
-            android:textColor="@color/accent"
-            android:textSize="36sp"
-            android:textStyle="bold" />
+            android:text="@string/status_off"
+            android:textColor="@color/muted"
+            android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/start_button"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="@color/accent"
-            android:text="@string/start"
-            android:textColor="@color/background"
-            android:textSize="32sp"
-            android:textStyle="bold" />
+        <LinearLayout style="@style/Card">
 
-        <TextView
-            style="@style/SectionTitle"
-            android:text="@string/presets" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                <TextView style="@style/CardTitle" android:text="@string/sounds" />
+                <TextView style="@style/CardHint" android:text="@string/sounds_hint" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/preset_grumbly"
-                style="@style/PresetButton"
-                android:text="@string/preset_grumbly" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="-5dp"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/preset_beast"
-                style="@style/PresetButton"
-                android:text="@string/preset_beast" />
+                <LinearLayout
+                    android:id="@+id/pad_roar"
+                    style="@style/Pad"
+                    android:background="@drawable/bg_pad_roar"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/icon_roar"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="sans-serif-black"
+                        android:letterSpacing="0.1"
+                        android:text="@string/roar"
+                        android:textColor="@color/text"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/roar_hint"
+                        android:textColor="#CCFFFFFF"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <include android:id="@+id/pad_1" android:layout_width="0dp" android:layout_height="108dp" android:layout_margin="5dp" android:layout_weight="1" layout="@layout/item_pad" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-5dp"
+                android:layout_marginEnd="-5dp"
+                android:orientation="horizontal">
+
+                <include android:id="@+id/pad_2" android:layout_width="0dp" android:layout_height="108dp" android:layout_margin="5dp" android:layout_weight="1" layout="@layout/item_pad" />
+                <include android:id="@+id/pad_3" android:layout_width="0dp" android:layout_height="108dp" android:layout_margin="5dp" android:layout_weight="1" layout="@layout/item_pad" />
+            </LinearLayout>
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <LinearLayout style="@style/Card">
 
-            <Button
-                android:id="@+id/preset_giant"
-                style="@style/PresetButton"
-                android:text="@string/preset_giant" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/preset_demon"
-                style="@style/PresetButton"
-                android:text="@string/preset_demon" />
+                <TextView style="@style/CardTitle" android:text="@string/monster" />
+                <TextView style="@style/CardHint" android:text="@string/monster_hint" />
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:clipToPadding="false"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView android:id="@+id/preset_grumbly" style="@style/Chip" android:text="@string/preset_grumbly" />
+                    <TextView android:id="@+id/preset_beast" style="@style/Chip" android:text="@string/preset_beast" />
+                    <TextView android:id="@+id/preset_giant" style="@style/Chip" android:text="@string/preset_giant" />
+                    <TextView android:id="@+id/preset_demon" style="@style/Chip" android:text="@string/preset_demon" />
+                    <TextView android:id="@+id/preset_mine" style="@style/Chip" android:text="@string/preset_mine" />
+                </LinearLayout>
+            </HorizontalScrollView>
         </LinearLayout>
 
-        <Button
-            android:id="@+id/roar_button"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="@color/roar"
-            android:text="@string/roar"
-            android:textColor="@color/text"
-            android:textSize="26sp"
-            android:textStyle="bold" />
+        <LinearLayout style="@style/Card">
 
-        <TextView
-            android:id="@+id/deep_label"
-            style="@style/SectionTitle" />
+            <TextView style="@style/CardTitle" android:text="@string/tune" />
 
-        <SeekBar
-            android:id="@+id/deep_bar"
-            style="@style/Slider" />
+            <LinearLayout style="@style/SliderRow">
+                <TextView style="@style/SliderLabel" android:text="@string/deepness" />
+                <TextView android:id="@+id/deep_value" style="@style/SliderValue" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/growl_label"
-            style="@style/SectionTitle" />
+            <SeekBar android:id="@+id/deep_bar" style="@style/Slider" />
 
-        <SeekBar
-            android:id="@+id/growl_bar"
-            style="@style/Slider" />
+            <LinearLayout style="@style/SliderRow">
+                <TextView style="@style/SliderLabel" android:text="@string/growl" />
+                <TextView android:id="@+id/growl_value" style="@style/SliderValue" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/volume_label"
-            style="@style/SectionTitle" />
+            <SeekBar android:id="@+id/growl_bar" style="@style/Slider" />
 
-        <SeekBar
-            android:id="@+id/volume_bar"
-            style="@style/Slider" />
+            <LinearLayout style="@style/SliderRow">
+                <TextView style="@style/SliderLabel" android:text="@string/echo" />
+                <TextView android:id="@+id/echo_value" style="@style/SliderValue" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/echo_label"
-            style="@style/SectionTitle" />
+            <SeekBar android:id="@+id/echo_bar" style="@style/Slider" />
 
-        <SeekBar
-            android:id="@+id/echo_bar"
-            style="@style/Slider" />
+            <LinearLayout style="@style/SliderRow">
+                <TextView style="@style/SliderLabel" android:text="@string/volume" />
+                <TextView android:id="@+id/volume_value" style="@style/SliderValue" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/mic_label"
-            style="@style/SectionTitle" />
+            <SeekBar android:id="@+id/volume_bar" style="@style/Slider" />
 
-        <SeekBar
-            android:id="@+id/mic_bar"
-            style="@style/Slider" />
+            <LinearLayout style="@style/SliderRow">
+                <TextView style="@style/SliderLabel" android:text="@string/mic_boost" />
+                <TextView android:id="@+id/mic_value" style="@style/SliderValue" />
+            </LinearLayout>
+
+            <SeekBar android:id="@+id/mic_bar" style="@style/Slider" />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView style="@style/CardTitle" android:text="@string/shake_to_roar" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/shake_hint"
+                        android:textColor="@color/muted"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <Switch
+                    android:id="@+id/shake_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:thumbTint="@color/text"
+                    android:trackTint="@color/switch_track" />
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="20dp"
+            android:lineSpacingExtra="2dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
             android:text="@string/speaker_tip"
             android:textColor="@color/muted"
-            android:textSize="15sp" />
+            android:textSize="13sp" />
     </LinearLayout>
 </ScrollView>
