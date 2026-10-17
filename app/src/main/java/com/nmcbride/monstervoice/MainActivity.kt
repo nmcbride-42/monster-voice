@@ -45,6 +45,7 @@ class MainActivity : Activity() {
     private var recordingSlot = -1
     private var resumeLiveAfterRecording = false
     private var roarSeed = 1
+    private var shownRoute: String? = null
 
     private val presets = mapOf(
         R.id.preset_grumbly to Preset(deep = 8, growl = 15, echo = 0),
@@ -58,6 +59,7 @@ class MainActivity : Activity() {
             val on = VoiceService.isRunning
             if (micButton.isOn != on) updateLiveState()
             micButton.level = if (on) voice.level else 0f
+            updateRouteStatus()
             micButton.postDelayed(this, 33)
         }
     }
@@ -448,10 +450,20 @@ class MainActivity : Activity() {
     private fun updateLiveState() {
         val on = VoiceService.isRunning
         // In speakerphone mode the volume buttons need to control call volume.
-        volumeControlStream = if (on && OutputRouter.wantsSpeakerphone(this)) AudioManager.STREAM_VOICE_CALL else AudioManager.STREAM_MUSIC
+        volumeControlStream = if (on) OutputRouter.route.volumeStream else AudioManager.STREAM_MUSIC
         micButton.isOn = on
         micButton.contentDescription = getString(if (on) R.string.stop else R.string.start)
         statusText.setText(if (on) R.string.status_on else R.string.status_off)
+        shownRoute = null
+    }
+
+    /** Shows where the live voice is really coming out, so speaker problems are easy to spot. */
+    private fun updateRouteStatus() {
+        if (!VoiceService.isRunning) return
+        val where = OutputRouter.describe(this, VoiceService.routedDevice) ?: return
+        if (where == shownRoute) return
+        shownRoute = where
+        statusText.text = getString(R.string.status_on_route, where)
     }
 
     // --- Helpers -------------------------------------------------------------

@@ -25,7 +25,8 @@ object SoundPlayer {
         val t = AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    // Call mode only routes while a call is set up, so use media for standalone sounds then.
+                    .setUsage(OutputRouter.route.let { if (it.callMode) AudioAttributes.USAGE_MEDIA else it.usage })
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build()
             )

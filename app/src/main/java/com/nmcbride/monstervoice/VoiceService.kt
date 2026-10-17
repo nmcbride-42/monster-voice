@@ -126,6 +126,9 @@ class VoiceService : Service(), SensorEventListener {
 
         @Volatile private var current: VoiceService? = null
 
+        /** Where the live voice is actually playing, if known. */
+        val routedDevice get() = current?.engine?.routedDevice
+
         /** Moves the live voice to the newly chosen speaker. */
         fun reroute() {
             current?.engine?.reroute()

@@ -17,9 +17,9 @@ import android.util.Log
  * Reads the microphone, runs it through [voice] and plays it straight back out,
  * on a dedicated high-priority audio thread.
  *
- * Many phones send audio to the quiet earpiece while the mic is recording, so
- * when the loud speaker is wanted the engine uses speakerphone (communication)
- * mode, which forces the loudspeaker and also turns on echo cancellation.
+ * Where the sound goes depends on [OutputRouter.route]: call mode, for example,
+ * forces speakerphone and turns on echo cancellation. The device the phone
+ * actually picked is reported in [routedDevice] so the screen can show it.
  */
 class AudioEngine(private val context: Context, private val voice: MonsterVoice) {
 
@@ -35,18 +35,22 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
         thread = Thread(::loop, "MonsterVoiceAudio").also { it.start() }
     }
 
-    /** Switches to the newly chosen speaker, restarting if speakerphone mode changes. */
+    /** The output the phone is really using right now, if known. */
+    @Volatile var routedDevice: AudioDeviceInfo? = null
+        private set
+
+    private var runningRoute = OutputRouter.Route.MEDIA
+
+    /** Switches to the newly chosen speaker, restarting if the route changes. */
     fun reroute() {
         if (!running) return
-        if (OutputRouter.wantsSpeakerphone(context) != speakerphone) {
+        if (OutputRouter.route != runningRoute) {
             stop()
             start()
         } else {
             activeTrack?.let { OutputRouter.apply(it) }
         }
     }
-
-    @Volatile private var speakerphone = false
 
     fun stop() {
         running = false
@@ -61,15 +65,15 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
         val inMin = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
         val outMin = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
 
-        val useSpeakerphone = OutputRouter.wantsSpeakerphone(context)
-        speakerphone = useSpeakerphone
-        if (useSpeakerphone) enterSpeakerphone()
+        val route = OutputRouter.route
+        runningRoute = route
+        if (route.callMode) enterSpeakerphone()
 
         var record: AudioRecord? = null
         var track: AudioTrack? = null
         try {
             record = AudioRecord(
-                if (useSpeakerphone) MediaRecorder.AudioSource.VOICE_COMMUNICATION else MediaRecorder.AudioSource.MIC,
+                if (route.callMode) MediaRecorder.AudioSource.VOICE_COMMUNICATION else MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
@@ -78,7 +82,7 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
             track = AudioTrack.Builder()
                 .setAudioAttributes(
                     AudioAttributes.Builder()
-                        .setUsage(if (useSpeakerphone) AudioAttributes.USAGE_VOICE_COMMUNICATION else AudioAttributes.USAGE_MEDIA)
+                        .setUsage(route.usage)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                         .build()
                 )
@@ -94,7 +98,7 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
                 .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
                 .build()
 
-            if (!useSpeakerphone) OutputRouter.apply(track)
+            if (!route.callMode) OutputRouter.apply(track)
             activeTrack = track
 
             if (record.state != AudioRecord.STATE_INITIALIZED) {
@@ -107,22 +111,25 @@ class AudioEngine(private val context: Context, private val voice: MonsterVoice)
             record.startRecording()
             track.play()
 
+            var chunks = 0
             while (running) {
                 val n = record.read(input, 0, CHUNK)
                 if (n <= 0) continue
                 voice.process(input, output, n)
                 track.write(output, 0, n)
+                if (chunks++ % 50 == 0) routedDevice = track.routedDevice
             }
         } catch (e: Exception) {
             Log.e(TAG, "Audio loop failed", e)
         } finally {
             running = false
             activeTrack = null
+            routedDevice = null
             runCatching { record?.stop() }
             runCatching { track?.stop() }
             record?.release()
             track?.release()
-            if (useSpeakerphone) leaveSpeakerphone()
+            if (route.callMode) leaveSpeakerphone()
         }
     }
 
