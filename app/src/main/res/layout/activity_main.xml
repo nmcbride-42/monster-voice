@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/app_name"
+            android:textColor="@color/accent"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/start_button"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/accent"
+            android:text="@string/start"
+            android:textColor="@color/background"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/SectionTitle"
+            android:text="@string/presets" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/preset_grumbly"
+                style="@style/PresetButton"
+                android:text="@string/preset_grumbly" />
+
+            <Button
+                android:id="@+id/preset_beast"
+                style="@style/PresetButton"
+                android:text="@string/preset_beast" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/preset_giant"
+                style="@style/PresetButton"
+                android:text="@string/preset_giant" />
+
+            <Button
+                android:id="@+id/preset_demon"
+                style="@style/PresetButton"
+                android:text="@string/preset_demon" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/deep_label"
+            style="@style/SectionTitle" />
+
+        <SeekBar
+            android:id="@+id/deep_bar"
+            style="@style/Slider" />
+
+        <TextView
+            android:id="@+id/growl_label"
+            style="@style/SectionTitle" />
+
+        <SeekBar
+            android:id="@+id/growl_bar"
+            style="@style/Slider" />
+
+        <TextView
+            android:id="@+id/volume_label"
+            style="@style/SectionTitle" />
+
+        <SeekBar
+            android:id="@+id/volume_bar"
+            style="@style/Slider" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/speaker_tip"
+            android:textColor="@color/muted"
+            android:textSize="15sp" />
+    </LinearLayout>
+</ScrollView>

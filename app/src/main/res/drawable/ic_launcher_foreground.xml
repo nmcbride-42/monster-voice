@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A green monster face: horns, two eyes and a toothy mouth. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#7CFF4F" android:pathData="M34,40 L30,24 L44,36 Z" />
+    <path android:fillColor="#7CFF4F" android:pathData="M74,40 L78,24 L64,36 Z" />
+    <path android:fillColor="#7CFF4F" android:pathData="M54,32 C70,32 80,44 80,58 C80,72 68,82 54,82 C40,82 28,72 28,58 C28,44 38,32 54,32 Z" />
+    <path android:fillColor="#140B1C" android:pathData="M40,50 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 Z" />
+    <path android:fillColor="#140B1C" android:pathData="M56,50 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 Z" />
+    <path android:fillColor="#140B1C" android:pathData="M38,64 L70,64 L66,74 L42,74 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M42,64 L46,64 L44,69 Z M52,64 L56,64 L54,69 Z M62,64 L66,64 L64,69 Z" />
+</vector>
